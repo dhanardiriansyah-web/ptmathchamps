@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Champs Placement Test</title>
+    <style>
+        :root {
+            --primary: #FF9F1C; /* Math Champs Orange */
+            --secondary: #2EC4B6; /* Teal/Blueish */
+            --accent: #E71D36; /* Red for Hearts */
+            --dark: #011627;
+            --light: #FDFFFC;
+            --bg: #f0f4f8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* HEADER */
+        header {
+            background: white;
+            padding: 15px;
+            border-bottom: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            height: 50px;
+            object-fit: contain;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f5f5f5;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .heart { color: var(--accent); }
+        .timer { color: var(--secondary); }
+
+        /* SCREENS */
+        .screen {
+            flex: 1;
+            padding: 25px;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* START SCREEN */
+        .welcome-hero {
+            margin-bottom: 30px;
+        }
+        
+        h1 { color: var(--primary); margin-bottom: 10px; }
+        h2 { font-size: 1.2rem; color: #666; font-weight: normal; }
+
+        .rules-box {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* QUIZ SCREEN */
+        .level-badge {
+            background: var(--secondary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .question-box {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            width: 100%;
+            text-align: left;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #eee;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .option-btn:hover {
+            border-color: var(--secondary);
+            background: #f0fffd;
+        }
+
+        .option-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* RESULT SCREEN */
+        .result-card {
+            background: linear-gradient(135deg, var(--primary), #FF7D00);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 100%;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(255, 159, 28, 0.3);
+        }
+
+        .placement-level {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dark);
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* GENERAL UI */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(255, 159, 28, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        /* Utility for Math */
+        .fraction {
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.9em;
+        }
+        .fraction > span {
+            display: block;
+            padding: 0 2px;
+        }
+        .fraction span.bottom {
+            border-top: thin solid black;
+        }
+
+        @media (max-width: 480px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            .question-box {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <img src="https://imgix3.ruangguru.com/assets/miscellaneous/png_aaojxe_9962.png" alt="Math Champs" class="logo">
+        <div class="status-bar" id="statusBar" style="visibility: hidden;">
+            <div class="status-item">
+                <span class="heart">❤️</span> <span id="livesDisplay">3</span>
+            </div>
+            <div class="status-item">
+                <span class="timer">⏱️</span> <span id="timerDisplay">60:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- SCREEN 1: START -->
+    <div id="startScreen" class="screen active">
+        <div class="welcome-hero">
+            <h1>Placement Test</h1>
+            <h2>Temukan level Math Champs kamu!</h2>
+        </div>
+
+        <div class="rules-box">
+            <h3>Cara Bermain:</h3>
+            <ul style="padding-left: 20px;">
+                <li>Waktu pengerjaan maksimal <strong>60 Menit</strong>.</li>
+                <li>Kamu punya <strong>3 Nyawa</strong>.</li>
+                <li>Jika jawaban salah, nyawa berkurang.</li>
+                <li>Jika nyawa habis, tes berhenti dan levelmu ditentukan saat itu juga.</li>
+                <li>Jawablah dengan jujur tanpa kalkulator.</li>
+            </ul>
+        </div>
+
+        <button class="btn" onclick="startGame()">Mulai Tes</button>
+    </div>
+
+    <!-- SCREEN 2: GAME -->
+    <div id="gameScreen" class="screen">
+        <div class="level-badge" id="currentLevelName">Level D1</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="question-box" id="questionText">
+            <!-- Soal akan muncul di sini -->
+        </div>
+
+        <div class="options-grid" id="optionsContainer">
+            <!-- Pilihan akan muncul di sini -->
+        </div>
+    </div>
+
+    <!-- SCREEN 3: RESULT -->
+    <div id="resultScreen" class="screen">
+        <h2>Tes Selesai!</h2>
+        <p>Berdasarkan performa kamu, kamu direkomendasikan masuk ke:</p>
+        
+        <div class="result-card">
+            <div>LEVEL KAMU:</div>
+            <div class="placement-level" id="finalPlacement">MASTERY 1</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-value" id="finalScore">0/60</div>
+                <div class="stat-label">Soal Terjawab</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="timeUsed">00:00</div>
+                <div class="stat-label">Waktu Digunakan</div>
+            </div>
+        </div>
+
+        <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+            Silakan screenshot hasil ini dan kirimkan ke admin Math Champs.
+        </p>
+
+        <button class="btn" style="margin-top: 20px; background-color: #6c757d;" onclick="location.reload()">Tes Ulang</button>
+    </div>
+</div>
+
+<script>
+    // --- DATABASE SOAL (60 Soal) ---
+    // Diubah menjadi format Pilihan Ganda untuk otomatisasi
+    
+    const questions = [
+        // === D1 ===
+        {
+            level: "Discovery 1",
+            text: "Bilangan manakah yang <b>lebih besar dari 12</b> tetapi <b>lebih kecil dari 15</b>?",
+            options: ["11", "16", "13", "10"],
+            answer: 2 // Index of correct answer (0-3) -> 13
+        },
+        {
+            level: "Discovery 1",
+            text: "Perhatikan pola: △, ○, ○, △, ○, ○, △, ... <br>Gambar apa di urutan ke-10?",
+            options: ["△ (Segitiga)", "○ (Lingkaran)", "□ (Kotak)", "☆ (Bintang)"],
+            answer: 0 // Pola berulang tiap 3: T, C, C. 10 mod 3 = 1 -> T
+        },
+        {
+            level: "Discovery 1",
+            text: "Adi punya 8 stiker. Budi punya 3 stiker <b>lebih sedikit</b> daripada Adi. Berapa stiker Budi?",
+            options: ["11", "5", "3", "8"],
+            answer: 1 // 8 - 3 = 5
+        },
+        {
+            level: "Discovery 1",
+            text: "Jika □ + □ = 10 dan □ + △ = 8, berapakah nilai △?",
+            options: ["5", "3", "2", "4"],
+            answer: 1 // Kotak=5, 5+Tri=8 -> Tri=3
+        },
+        {
+            level: "Discovery 1",
+            text: "Antrian: Siti di depan Rudi. Eko di belakang Rudi. Ani paling depan. Siapa urutan ke-3?",
+            options: ["Ani", "Siti", "Rudi", "Eko"],
+            answer: 2 // Ani(1), Siti(2), Rudi(3), Eko(4)
+        },
+        
+        // === D2 ===
+        {
+            level: "Discovery 2",
+            text: "Jarum panjang menunjuk angka 6. Jarum pendek di tengah-tengah antara angka 2 dan 3. Pukul berapakah itu?",
+            options: ["02.00", "03.00", "02.30", "03.30"],
+            answer: 2
+        },
+        {
+            level: "Discovery 2",
+            text: "Bentuk penjumlahan berulang dari 4 × 3 adalah...",
+            options: ["4 + 4 + 4", "3 + 3 + 3 + 3", "4 + 3", "3 × 3 × 3 × 3"],
+            answer: 1 // 4 kali 3-nya -> 3+3+3+3
+        },
+        {
+            level: "Discovery 2",
+            text: "Pizza dipotong 4 bagian <b>tidak</b> sama besar. Adik ambil 1 potong. Apakah Adik memakan 1/4 bagian?",
+            options: ["Ya", "Tidak", "Mungkin", "Tidak Tahu"],
+            answer: 1
+        },
+        {
+            level: "Discovery 2",
+            text: "Aku bilangan. Ditambah 5, lalu dikurangi 2, hasilnya 20. Bilangan berapakah aku?",
+            options: ["15", "17", "23", "13"],
+            answer: 1 // (x+5)-2=20 -> x+3=20 -> x=17
+        },
+        {
+            level: "Discovery 2",
+            text: "Tali Merah 15m. Tali Biru 6m lebih panjang dari Merah. Tali Hijau 4m lebih pendek dari Biru. Panjang Hijau?",
+            options: ["21 m", "17 m", "11 m", "15 m"],
+            answer: 1 // M=15, B=21, H=21-4=17
+        },
+
+        // === D3 ===
+        {
+            level: "Discovery 3",
+            text: "Aku bilangan ganjil antara 400 dan 410. Satuan-ku 5. Bilangan berapakah aku?",
+            options: ["405", "415", "403", "450"],
+            answer: 0
+        },
+        {
+            level: "Discovery 3",
+            text: "Tinggi Ali 1m 20cm. Tinggi Budi 105cm. Siapa lebih tinggi dan berapa selisihnya?",
+            options: ["Ali, 15 cm", "Budi, 15 cm", "Ali, 25 cm", "Budi, 25 cm"],
+            answer: 0 // Ali=120, Budi=105. 120-105=15
+        },
+        {
+            level: "Discovery 3",
+            text: "Mainan seharga Rp 2.500. Andi punya koin Rp 500. Berapa keping yang harus dibayar?",
+            options: ["4", "5", "6", "3"],
+            answer: 1
+        },
+        {
+            level: "Discovery 3",
+            text: "Total 350 buku. Buku cerita 120 lebih banyak dari buku pelajaran. Berapa buku pelajaran?",
+            options: ["115", "235", "120", "230"],
+            answer: 0 // C + P = 350, C = P + 120. (P+120)+P=350. 2P=230. P=115.
+        },
+        {
+            level: "Discovery 3",
+            text: "Tiang: 1/2 di tanah, 2m di air, 3m di udara. Panjang total tiang?",
+            options: ["5 m", "10 m", "12 m", "8 m"],
+            answer: 1 // Air+Udara = 5m (ini setengahnya). Total = 10m.
+        },
+
+        // === D4 ===
+        {
+            level: "Discovery 4",
+            text: "Grafik: Batang 'Sepak Bola' di tengah-tengah garis 20 dan 30. Berapa siswanya?",
+            options: ["20", "25", "30", "50"],
+            answer: 1
+        },
+        {
+            level: "Discovery 4",
+            text: "Film mulai 14.45, durasi 1 jam 30 menit. Selesai pukul?",
+            options: ["16.00", "15.15", "16.15", "15.45"],
+            answer: 2 // 14.45 + 1.30 -> 15.75 -> 16.15
+        },
+        {
+            level: "Discovery 4",
+            text: "Bilangan dibagi 4 hasilnya 12 sisa 3. Bilangan itu adalah...",
+            options: ["45", "48", "51", "52"],
+            answer: 2 // 4*12 + 3 = 48+3 = 51
+        },
+        {
+            level: "Discovery 4",
+            text: "Berapa banyak bilangan 2-digit dari angka 3, 5, 8 (tidak boleh berulang)?",
+            options: ["3", "5", "6", "9"],
+            answer: 2 // 35, 38, 53, 58, 83, 85
+        },
+        {
+            level: "Discovery 4",
+            text: "Umur Ayah 4x Ani. Selisih 27 tahun. Umur Ani?",
+            options: ["9", "7", "27", "36"],
+            answer: 0 // 4u - u = 27 -> 3u = 27 -> u=9
+        },
+
+        // === E1 ===
+        {
+            level: "Exploration 1",
+            text: "Persegi kelilingnya 20 cm. Panjang sisinya?",
+            options: ["4 cm", "5 cm", "10 cm", "20 cm"],
+            answer: 1
+        },
+        {
+            level: "Exploration 1",
+            text: "4.582 dibulatkan ke <b>ratusan</b> terdekat?",
+            options: ["4.500", "4.600", "4.580", "5.000"],
+            answer: 1
+        },
+        {
+            level: "Exploration 1",
+            text: "Luas persegi panjang 24 m². Lebar 4 m. Berapa kelilingnya?",
+            options: ["20 m", "10 m", "12 m", "24 m"],
+            answer: 0 // P=6. K = 2(6+4) = 20
+        },
+        {
+            level: "Exploration 1",
+            text: "Persegi besar sisi 5cm. Persegi kecil sisi 3cm diletakkan di atasnya. Luas yang <b>tidak</b> tertutup?",
+            options: ["16 cm²", "9 cm²", "25 cm²", "34 cm²"],
+            answer: 0 // 25 - 9 = 16
+        },
+        {
+            level: "Exploration 1",
+            text: "Dua bilangan jumlah 2.500, selisih 500. Bilangan terkecil?",
+            options: ["1.000", "1.500", "500", "2.000"],
+            answer: 0 // (2500-500)/2 = 1000
+        },
+
+        // === E2 ===
+        {
+            level: "Exploration 2",
+            text: "Jenis sudut pada pukul 01.00?",
+            options: ["Siku-siku", "Tumpul", "Lancip", "Lurus"],
+            answer: 2
+        },
+        {
+            level: "Exploration 2",
+            text: "30 siswa. 2/3 perempuan. Berapa siswa laki-laki?",
+            options: ["20", "10", "15", "5"],
+            answer: 1 // 1/3 * 30 = 10
+        },
+        {
+            level: "Exploration 2",
+            text: "Gayung 1 Liter. Dituang ke 3 gelas masing-masing 250ml. Sisa air?",
+            options: ["0 ml", "250 ml", "500 ml", "750 ml"],
+            answer: 1 // 1000 - 750 = 250
+        },
+        {
+            level: "Exploration 2",
+            text: "Kue 1/2 ke nenek. 1/2 <b>dari sisanya</b> dimakan adik. Sisa kue?",
+            options: ["1/4", "1/2", "0", "3/4"],
+            answer: 0
+        },
+        {
+            level: "Exploration 2",
+            text: "Besar sudut terkecil pukul 04.00?",
+            options: ["90°", "100°", "120°", "150°"],
+            answer: 2 // 4 * 30 = 120
+        },
+
+        // === E3 ===
+        {
+            level: "Exploration 3",
+            text: "0,75 dalam bentuk persen?",
+            options: ["7,5%", "75%", "0,75%", "750%"],
+            answer: 1
+        },
+        {
+            level: "Exploration 3",
+            text: "3 - 1 <span class='fraction'><span>2</span><span class='bottom'>5</span></span> = ...",
+            options: ["1 2/5", "1 3/5", "2 3/5", "2 2/5"],
+            answer: 1 // 3 - 1.4 = 1.6 -> 1 3/5
+        },
+        {
+            level: "Exploration 3",
+            text: "Baju Rp 50.000 diskon 20%. Berapa <b>besar potongan harganya</b>?",
+            options: ["Rp 10.000", "Rp 40.000", "Rp 20.000", "Rp 5.000"],
+            answer: 0
+        },
+        {
+            level: "Exploration 3",
+            text: "Bilangan x 4, tambah 8, bagi 2 = 20. Bilangan itu?",
+            options: ["8", "10", "12", "6"],
+            answer: 0 // (20*2 - 8) / 4 = 32/4 = 8
+        },
+        {
+            level: "Exploration 3",
+            text: "Awalnya A = B + 4 liter. 1 liter pindah dari A ke B. Selisih sekarang?",
+            options: ["2 liter", "3 liter", "4 liter", "0 liter"],
+            answer: 0 // A=5, B=1 (diff 4). Pindah 1 -> A=4, B=2. Diff 2.
+        },
+
+        // === E4 ===
+        {
+            level: "Exploration 4",
+            text: "Nilai tempat angka 7 pada 14,375?",
+            options: ["Satuan", "Persepuluhan", "Perseratusan", "Perseribuan"],
+            answer: 2
+        },
+        {
+            level: "Exploration 4",
+            text: "Volume balok 240 cm³. Luas alas 60 cm². Tinggi?",
+            options: ["4 cm", "40 cm", "24 cm", "6 cm"],
+            answer: 0
+        },
+        {
+            level: "Exploration 4",
+            text: "Suhu naik 2°C tiap jam dari 08.00 (24°C). Suhu pukul 11.00?",
+            options: ["26°C", "28°C", "30°C", "32°C"],
+            answer: 2 // 3 jam x 2 = 6. 24+6=30
+        },
+        {
+            level: "Exploration 4",
+            text: "Tangki penuh air. Batu masuk, air tumpah 250 ml. Volume batu?",
+            options: ["250 cm³", "100 cm³", "25 cm³", "1000 cm³"],
+            answer: 0
+        },
+        {
+            level: "Exploration 4",
+            text: "Tali 10m dipotong jadi 4. Tiap potongan dipotong lagi jadi 2. Panjang potongan kecil?",
+            options: ["1.25 m", "2.5 m", "1 m", "0.5 m"],
+            answer: 0 // 10 / 8 = 1.25
+        },
+
+        // === M1 ===
+        {
+            level: "Mastery 1",
+            text: "Sederhanakan rasio 12 : 18 : 24",
+            options: ["2 : 3 : 4", "1 : 2 : 3", "3 : 4 : 5", "6 : 9 : 12"],
+            answer: 0
+        },
+        {
+            level: "Mastery 1",
+            text: "Luas segitiga 30 cm². Alas 10 cm. Tinggi?",
+            options: ["3 cm", "6 cm", "15 cm", "60 cm"],
+            answer: 1 // L = 1/2 a t -> 30 = 5t -> t=6
+        },
+        {
+            level: "Mastery 1",
+            text: "Mobil A: 60 km/jam. Mobil B: 1 km/menit. Mana lebih cepat?",
+            options: ["Mobil A", "Mobil B", "Sama Cepat", "Tidak tahu"],
+            answer: 2 // 1 km/menit = 60 km/jam
+        },
+        {
+            level: "Mastery 1",
+            text: "Uang A:B = 3:5. B beri Rp 10.000 ke A, uang jadi sama. Total uang mereka?",
+            options: ["Rp 40.000", "Rp 80.000", "Rp 160.000", "Rp 100.000"],
+            answer: 1 // Diff 2 unit = 20.000 (karena B -10, A +10, gap menutup 2x). 1 unit=10k. Total 8 unit = 80k.
+        },
+        {
+            level: "Mastery 1",
+            text: "Budi pergi kecepatan 40 km/jam, pulang 60 km/jam. Kecepatan rata-rata?",
+            options: ["50 km/jam", "48 km/jam", "55 km/jam", "100 km/jam"],
+            answer: 1 // Harmonic mean: 2ab/(a+b) = 2*40*60/100 = 48
+        },
+
+        // === M2 ===
+        {
+            level: "Mastery 2",
+            text: "20 - 12 ÷ 4 + 3 × 2 =",
+            options: ["23", "11", "16", "22"],
+            answer: 0 // 20 - 3 + 6 = 23
+        },
+        {
+            level: "Mastery 2",
+            text: "Garis sejajar. Sudut dalam berseberangan 65°. Pasangannya?",
+            options: ["115°", "65°", "25°", "90°"],
+            answer: 1
+        },
+        {
+            level: "Mastery 2",
+            text: "Rata-rata 4 bilangan = 9. Satu dibuang, rata-rata jadi 8. Bilangan yang dibuang?",
+            options: ["11", "12", "13", "10"],
+            answer: 1 // Total awal 36. Total baru 3*8=24. 36-24=12
+        },
+        {
+            level: "Mastery 2",
+            text: "Ayam dan Kambing. 10 Kepala, 28 Kaki. Berapa kambing?",
+            options: ["4", "6", "5", "8"],
+            answer: 0 // Asumsi semua ayam (20 kaki). Sisa 8 kaki. 8/2 = 4 kambing.
+        },
+        {
+            level: "Mastery 2",
+            text: "Segitiga sama kaki, satu sudut 40°. Kemungkinan sudut lainnya?",
+            options: ["40° dan 100°", "70° dan 70°", "Keduanya benar", "Salah semua"],
+            answer: 2
+        },
+
+        // === M3 ===
+        {
+            level: "Mastery 3",
+            text: "Jika y = 3, nilai 2y² - 5 adalah...",
+            options: ["7", "13", "31", "19"],
+            answer: 1 // 2(9) - 5 = 18 - 5 = 13
+        },
+        {
+            level: "Mastery 3",
+            text: "A:B = 2:3 dan B:C = 4:5. Rasio A:B:C?",
+            options: ["2:3:5", "8:12:15", "8:12:10", "6:12:20"],
+            answer: 1 // B disamakan kpk 3&4=12. A=8, B=12, C=15
+        },
+        {
+            level: "Mastery 3",
+            text: "Harga naik Rp 10.000 jadi Rp 12.000. Persen kenaikan?",
+            options: ["20%", "25%", "10%", "15%"],
+            answer: 0
+        },
+        {
+            level: "Mastery 3",
+            text: "Jual Rp 120.000, untung 20% dari <b>harga beli</b>. Harga beli?",
+            options: ["Rp 100.000", "Rp 96.000", "Rp 144.000", "Rp 110.000"],
+            answer: 0 // 120% = 120k. 100% = 100k
+        },
+        {
+            level: "Mastery 3",
+            text: "1/3 Uang A = 2/5 Uang B. Selisih Rp 5.000. Total uang?",
+            options: ["Rp 35.000", "Rp 55.000", "Rp 11.000", "Rp 25.000"],
+            answer: 1 // A/3 = 2B/5 -> 5A = 6B -> A:B = 6:5. Selisih 1 unit = 5000. Total 11 unit = 55.000
+        },
+
+        // === M4 ===
+        {
+            level: "Mastery 4",
+            text: "Keliling roda 132 cm (π=22/7). Jari-jarinya?",
+            options: ["21 cm", "14 cm", "42 cm", "7 cm"],
+            answer: 0 // 2*22/7*r = 132 -> 44/7 r = 132 -> r = 21
+        },
+        {
+            level: "Mastery 4",
+            text: "Persegi panjang (14x10) + Setengah Lingkaran (d=14). Keliling gabungan?",
+            options: ["56 cm", "60 cm", "64 cm", "72 cm"],
+            answer: 0 // Sisi lurus: 10+14+10 = 34. Lengkung: 1/2 * 22/7 * 14 = 22. Total 56. (Sisi 14 yg nempel tidak dihitung)
+        },
+        {
+            level: "Mastery 4",
+            text: "Diagram lingkaran: Sudut 'Suka Math' 90°. Total 40 orang. Yang suka Math?",
+            options: ["10", "20", "30", "4"],
+            answer: 0 // 1/4 * 40 = 10
+        },
+        {
+            level: "Mastery 4",
+            text: "Persegi sisi 14cm berisi 4 lingkaran saling bersinggungan. Luas di sela-sela lingkaran?",
+            options: ["42 cm²", "154 cm²", "196 cm²", "84 cm²"],
+            answer: 0 // Persegi 196. 4 Lingkaran (r=3.5) -> 4 * 22/7 * 3.5^2 = 154. 196-154 = 42
+        },
+        {
+            level: "Mastery 4",
+            text: "Bak (100x60). Masuk kubus rusuk 20. Kenaikan air?",
+            options: ["1 cm", "2 cm", "1.33 cm", "1.5 cm"],
+            answer: 2 // Vol kubus = 8000. Luas alas bak = 6000. Tinggi = 8000/6000 = 1.33
+        }
+    ];
+
+    // --- GAME STATE ---
+    let currentQuestionIndex = 0;
+    let lives = 3;
+    let timerInterval;
+    let timeRemaining = 3600; // 60 minutes in seconds
+    let startTime;
+    let correctAnswers = 0;
+
+    // --- DOM ELEMENTS ---
+    const startScreen = document.getElementById('startScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const questionText = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const progressBar = document.getElementById('progressBar');
+    const currentLevelName = document.getElementById('currentLevelName');
+    const livesDisplay = document.getElementById('livesDisplay');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const statusBar = document.getElementById('statusBar');
+
+    // --- FUNCTIONS ---
+
+    function startGame() {
+        startScreen.classList.remove('active');
+        gameScreen.classList.add('active');
+        statusBar.style.visibility = 'visible';
+        
+        currentQuestionIndex = 0;
+        lives = 3;
+        correctAnswers = 0;
+        timeRemaining = 3600;
+        updateStats();
+
+        startTime = new Date();
+        timerInterval = setInterval(updateTimer, 1000);
+        
+        loadQuestion();
+    }
+
+    function updateTimer() {
+        timeRemaining--;
+        let minutes = Math.floor(timeRemaining / 60);
+        let seconds = timeRemaining % 60;
+        timerDisplay.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+        if (timeRemaining <= 0) {
+            endGame();
+        }
+    }
+
+    function updateStats() {
+        livesDisplay.innerText = lives;
+        // Update progress bar
+        const progress = ((currentQuestionIndex) / questions.length) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+
+    function loadQuestion() {
+        if (currentQuestionIndex >= questions.length) {
+            endGame(true); // Completed all questions
+            return;
+        }
+
+        const q = questions[currentQuestionIndex];
+        currentLevelName.innerText = q.level;
+        questionText.innerHTML = `${currentQuestionIndex + 1}. ${q.text}`;
+        
+        optionsContainer.innerHTML = '';
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt;
+            btn.onclick = () => checkAnswer(index);
+            optionsContainer.appendChild(btn);
+        });
+
+        updateStats();
+    }
+
+    function checkAnswer(selectedIndex) {
+        const q = questions[currentQuestionIndex];
+        
+        if (selectedIndex === q.answer) {
+            // Correct
+            correctAnswers++;
+            currentQuestionIndex++;
+            loadQuestion();
+        } else {
+            // Wrong
+            lives--;
+            updateStats();
+            
+            // Visual feedback (shake or red flash) could go here
+            const btns = document.querySelectorAll('.option-btn');
+            btns[selectedIndex].style.background = '#ffdddd';
+            btns[selectedIndex].style.borderColor = 'red';
+
+            if (lives <= 0) {
+                setTimeout(endGame, 500);
+            } else {
+                // User requirement implies logic continues, 
+                // but usually placement tests stop or penalize.
+                // Assuming we move to next question but with less life?
+                // Or retry? Standard placement test: Move on.
+                currentQuestionIndex++;
+                setTimeout(loadQuestion, 500);
+            }
+        }
+    }
+
+    function endGame(completed = false) {
+        clearInterval(timerInterval);
+        gameScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+        statusBar.style.visibility = 'hidden';
+
+        // Logic placement:
+        // Jika nyawa habis di soal X, levelnya adalah level soal X.
+        // Jika completed (selesai semua), levelnya Mastery 4 (Lulus).
+        
+        let finalLevel = "";
+        
+        if (completed) {
+            finalLevel = "MASTERY 4 (GRADUATED)";
+        } else {
+            // Get level of the current question where they died
+            // If they died at index 60 (out of bounds), use last one
+            let idx = Math.min(currentQuestionIndex, questions.length - 1);
+            finalLevel = questions[idx].level;
+        }
+
+        document.getElementById('finalPlacement').innerText = finalLevel;
+        document.getElementById('finalScore').innerText = `${correctAnswers}/${questions.length}`;
+        
+        // Calc time used
+        let timeUsedSeconds = 3600 - timeRemaining;
+        let m = Math.floor(timeUsedSeconds / 60);
+        let s = timeUsedSeconds % 60;
+        document.getElementById('timeUsed').innerText = `${m}m ${s}s`;
+    }
+
+</script>
+
+</body>
+</html>
