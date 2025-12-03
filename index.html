@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Champs - Precision Placement Test</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap');
+        
+        body { font-family: 'Noto Sans', sans-serif; background-color: #f3f4f6; }
+        .math-content { font-size: 1.15rem; color: #1f2937; line-height: 1.6; }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .option-card:hover { border-color: #3b82f6; background-color: #eff6ff; }
+        .selected-option { border-color: #2563eb; background-color: #dbeafe; font-weight: bold; }
+        
+        /* Custom Scrollbar for Question Area */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-2 md:p-6">
+
+    <!-- Container Utama -->
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 relative min-h-[650px] flex flex-col">
+        
+        <!-- HEADER -->
+        <div class="bg-gradient-to-r from-indigo-700 to-blue-500 p-4 text-white flex justify-between items-center shadow-md z-10">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2 rounded-lg"><i class="fa-solid fa-graduation-cap text-xl"></i></div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide leading-tight">Math Champs</h1>
+                    <p class="text-xs text-blue-100 opacity-90">Adaptive Placement System</p>
+                </div>
+            </div>
+            <div id="timer-display" class="hidden text-sm font-mono bg-black/20 backdrop-blur-sm border border-white/20 px-3 py-1.5 rounded-full flex items-center">
+                <i class="fa-regular fa-clock mr-2"></i> <span id="time-remaining">60:00</span>
+            </div>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div id="progress-container" class="hidden w-full bg-gray-100 h-1.5">
+            <div id="progress-bar" class="bg-green-500 h-1.5 transition-all duration-700 ease-out" style="width: 0%"></div>
+        </div>
+
+        <!-- MAIN CONTENT AREA -->
+        <div id="app-content" class="flex-1 p-6 md:p-8 flex flex-col justify-center relative overflow-y-auto">
+            
+            <!-- SCREEN 1: WELCOME -->
+            <div id="screen-welcome" class="text-center fade-in max-w-lg mx-auto">
+                <div class="mb-6 relative inline-block">
+                    <div class="absolute inset-0 bg-indigo-200 rounded-full blur-xl opacity-50"></div>
+                    <img src="https://img.freepik.com/free-vector/calculator-concept-illustration_114360-1239.jpg" alt="Math" class="w-40 h-40 object-cover rounded-full border-4 border-white shadow-lg relative z-10 mx-auto">
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-3">Siap Menjadi Juara?</h2>
+                <p class="text-gray-600 mb-8 leading-relaxed">
+                    Kami akan menentukan level belajarmu secara presisi. Jawablah dengan jujur sesuai kemampuanmu.
+                </p>
+                
+                <div class="space-y-4 text-left bg-gray-50 p-6 rounded-xl border border-gray-100">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nama Lengkap</label>
+                        <input type="text" id="input-name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Contoh: Budi Santoso">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Usia Siswa (Tahun)</label>
+                        <select id="input-age" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white transition">
+                            <option value="6">6 Tahun (Kelas 1 SD)</option>
+                            <option value="7">7 Tahun (Kelas 2 SD)</option>
+                            <option value="8">8 Tahun (Kelas 3 SD)</option>
+                            <option value="9">9 Tahun (Kelas 4 SD)</option>
+                            <option value="10">10 Tahun (Kelas 5 SD)</option>
+                            <option value="11">11 Tahun (Kelas 6 SD)</option>
+                            <option value="12">12 Tahun ke atas</option>
+                        </select>
+                    </div>
+                    <button onclick="startTest()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg shadow-lg transition transform hover:scale-[1.02] active:scale-95 flex justify-center items-center gap-2">
+                        <span>Mulai Tes Diagnostik</span> <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 2: QUESTION -->
+            <div id="screen-question" class="hidden fade-in flex-col h-full justify-between">
+                <div>
+                    <!-- Meta Info -->
+                    <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded">Soal <span id="q-number">1</span></span>
+                            <span id="q-difficulty-badge" class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded border">?</span>
+                        </div>
+                        <span id="q-stage" class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Fase Kalibrasi</span>
+                    </div>
+
+                    <!-- Soal -->
+                    <div class="mb-8">
+                        <div id="q-text" class="math-content text-xl font-medium text-gray-800 mb-6">
+                            <!-- MathJax Content -->
+                        </div>
+                    </div>
+
+                    <!-- Opsi Jawaban -->
+                    <div id="q-options" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                        <!-- JS Injected Options -->
+                    </div>
+                </div>
+
+                <!-- Navigasi -->
+                <div class="mt-4 flex justify-between items-center border-t border-gray-100 pt-4">
+                    <div class="text-xs text-gray-400 italic">Analisis Adaptif Aktif</div>
+                    <button id="btn-next" onclick="submitAnswer()" class="bg-gray-900 hover:bg-black text-white px-8 py-3 rounded-xl font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2">
+                        <span>Jawab</span> <i class="fa-solid fa-check"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 3: ANALYZING -->
+            <div id="screen-analyzing" class="hidden flex-col items-center justify-center fade-in h-full">
+                <div class="relative w-24 h-24 mb-6">
+                    <div class="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
+                    <div class="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+                    <i class="fa-solid fa-brain absolute inset-0 flex items-center justify-center text-indigo-600 text-3xl animate-pulse"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Menganalisis Jawaban...</h3>
+                <p class="text-gray-500 max-w-xs text-center" id="analysis-text">Menyesuaikan jalur soal berikutnya.</p>
+            </div>
+
+            <!-- SCREEN 4: RESULT -->
+            <div id="screen-result" class="hidden text-center fade-in h-full flex flex-col items-center justify-center">
+                <div class="mb-4 relative">
+                    <div class="absolute -inset-4 bg-green-100 rounded-full blur-xl opacity-70 animate-pulse"></div>
+                    <i class="fa-solid fa-certificate text-6xl text-green-600 relative z-10 drop-shadow-md"></i>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Analisis Penempatan Selesai</h2>
+
+                <div class="w-full max-w-lg bg-white p-1 rounded-2xl shadow-xl border border-gray-100 mb-6">
+                    <div class="bg-indigo-50 rounded-xl p-6 border border-indigo-100 text-left">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="text-xs text-indigo-600 font-bold uppercase tracking-widest">Tingkatan Math Champs</p>
+                                <h1 id="result-level" class="text-3xl font-extrabold text-indigo-800 tracking-tight">EXPLORATION 3</h1>
+                            </div>
+                            <div class="bg-white px-3 py-1 rounded shadow-sm border border-indigo-100">
+                                <span class="text-xs text-gray-400 block">Skor Adaptif</span>
+                                <span id="result-score" class="text-xl font-bold text-indigo-600">85</span>
+                            </div>
+                        </div>
+                        
+                        <div class="h-px w-full bg-indigo-200 my-4"></div>
+                        
+                        <h4 class="font-bold text-indigo-900 text-sm mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Analisis Diagnostik:</h4>
+                        <p id="result-desc" class="text-sm text-indigo-900/80 leading-relaxed">
+                            <!-- Desc injected by JS -->
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 w-full max-w-lg mb-8">
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-left">
+                        <span class="block text-xs text-gray-500 uppercase font-bold mb-1">Kekuatan</span>
+                        <p id="result-strength" class="text-sm font-medium text-green-700">Logika Aritmatika Dasar</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-left">
+                        <span class="block text-xs text-gray-500 uppercase font-bold mb-1">Fokus Belajar</span>
+                        <p id="result-focus" class="text-sm font-medium text-orange-600">Pecahan & Geometri</p>
+                    </div>
+                </div>
+
+                <button onclick="location.reload()" class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 px-8 rounded-full shadow transition transform hover:-translate-y-1">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> Tes Ulang
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIKA -->
+    <script>
+        // ==========================================
+        // 1. BANK SOAL (FULL 120 ITEMS)
+        // ==========================================
+        const questionBank = {
+            // === LEVEL DISCOVERY (Total 40 Soal) ===
+            discovery: [
+                // D1 (1-10)
+                { id: 'd1_1', text: "Saya adalah bilangan ganjil antara 10 dan 14. Bilangan berapakah saya?", options: ['11', '12', '13', '15'], correct: '13', difficulty: 1, topic: 'Logic' },
+                { id: 'd1_2', text: "$5 + \\dots = 12 - 2$. Bilangan yang tepat adalah...", options: ['3', '5', '7', '10'], correct: '5', difficulty: 1, topic: 'Algebra' },
+                { id: 'd1_3', text: "Jika $A = 5$ dan $B = A + 4$, berapakah nilai $A + B$?", options: ['9', '14', '13', '10'], correct: '14', difficulty: 2, topic: 'Algebra' },
+                { id: 'd1_4', text: "Ada 3 kartu: [4], [9], [2]. Dua kartu yang jika dijumlahkan hasilnya 11 adalah...", options: ['4 dan 9', '4 dan 2', '9 dan 2', '4 dan 7'], correct: '9 dan 2', difficulty: 1, topic: 'Logic' },
+                { id: 'd1_5', text: "$... - 6 = 13$. Bilangan di titik-titik adalah...", options: ['7', '19', '18', '20'], correct: '19', difficulty: 1, topic: 'Arithmetic' },
+                { id: 'd1_6', text: "Isilah kotak dengan bilangan yang sama: $\\square + \\square = 18$. Bilangan itu adalah...", options: ['8', '9', '6', '7'], correct: '9', difficulty: 1, topic: 'Arithmetic' },
+                { id: 'd1_7', text: "Ali antre urutan ke-5 dari depan dan ke-5 dari belakang. Jumlah anak dalam antrean adalah...", options: ['10', '9', '11', '8'], correct: '9', difficulty: 3, topic: 'Logic' },
+                { id: 'd1_8', text: "Budi punya 8 kelereng. Candra punya 2 kelereng lebih sedikit dari Budi. Jumlah kelereng mereka...", options: ['14', '16', '10', '6'], correct: '14', difficulty: 2, topic: 'Word Problem' },
+                { id: 'd1_9', text: "$15 - 3 - 5 = \\dots$", options: ['7', '8', '12', '10'], correct: '7', difficulty: 1, topic: 'Arithmetic' },
+                { id: 'd1_10', text: "Manakah yang nilainya paling besar?", options: ['1 puluhan 8 satuan', '9 satuan', '2 puluhan', '15 satuan'], correct: '2 puluhan', difficulty: 1, topic: 'Place Value' },
+                // D2 (11-20)
+                { id: 'd2_1', text: "Bilangan di antara 17 dan 19 adalah...", options: ['16', '18', '20', '15'], correct: '18', difficulty: 1, topic: 'Number Sense' },
+                { id: 'd2_2', text: "Berapakah beda antara bilangan terbesar dan terkecil dari deret: $8, 15, 3, 19$?", options: ['11', '16', '12', '14'], correct: '16', difficulty: 2, topic: 'Logic' },
+                { id: 'd2_3', text: "$10$ lebihnya dari ... adalah $16$.", options: ['6', '26', '16', '10'], correct: '6', difficulty: 2, topic: 'Algebra' },
+                { id: 'd2_4', text: "Saya punya 4 sisi lurus sama panjang, tapi bukan persegi. Siapakah saya?", options: ['Persegi Panjang', 'Belah Ketupat', 'Trapesium', 'Lingkaran'], correct: 'Belah Ketupat', difficulty: 2, topic: 'Geometry' },
+                { id: 'd2_5', text: "Ada 4 ayam dan 2 kambing. Berapa jumlah kaki seluruhnya?", options: ['12', '16', '14', '18'], correct: '16', difficulty: 2, topic: 'Logic' },
+                { id: 'd2_6', text: "Ibu membeli 15 telur. Dipakai 5, pecah 3. Sisa telur adalah...", options: ['7', '8', '10', '12'], correct: '7', difficulty: 2, topic: 'Word Problem' },
+                { id: 'd2_7', text: "Adi membaca halaman 10 sampai 15. Berapa lembar halaman yang dibaca?", options: ['5', '6', '4', '7'], correct: '6', difficulty: 3, topic: 'Logic' },
+                { id: 'd2_8', text: "Hari ini Senin. 3 hari lagi adalah hari...", options: ['Rabu', 'Kamis', 'Jumat', 'Minggu'], correct: 'Kamis', difficulty: 1, topic: 'Time' },
+                { id: 'd2_9', text: "Jam menunjukkan pukul 3 pas. Jarum pendek menunjuk angka...", options: ['12', '3', '6', '9'], correct: '3', difficulty: 1, topic: 'Time' },
+                { id: 'd2_10', text: "$3$ puluhan $4$ satuan $+ 6$ satuan = ... puluhan.", options: ['3', '4', '40', '30'], correct: '4', difficulty: 2, topic: 'Place Value' },
+                // D3 (21-30)
+                { id: 'd3_1', text: "Jika $2A + 15 = 43$, maka angka $A$ adalah...", options: ['14', '28', '19', '21'], correct: '14', difficulty: 3, topic: 'Algebra' },
+                { id: 'd3_2', text: "Bilangan genap terbesar yang kurang dari 40 adalah...", options: ['39', '38', '36', '40'], correct: '38', difficulty: 1, topic: 'Number Sense' },
+                { id: 'd3_3', text: "$36$ adalah ... kurangnya dari $40$.", options: ['4', '6', '14', '76'], correct: '4', difficulty: 1, topic: 'Arithmetic' },
+                { id: 'd3_4', text: "Aku bilangan 2 digit. Puluhan 2 lebih besar dari satuan. Jumlah digit 8. Aku adalah...", options: ['62', '53', '35', '53'], correct: '53', difficulty: 3, topic: 'Logic' },
+                { id: 'd3_5', text: "$15 + \\dots = 32$", options: ['15', '16', '17', '18'], correct: '17', difficulty: 2, topic: 'Arithmetic' },
+                { id: 'd3_6', text: "$40 - \\dots = 12 + 8$", options: ['20', '10', '30', '15'], correct: '20', difficulty: 2, topic: 'Algebra' },
+                { id: 'd3_7', text: "Hitung cepat: $18 + 2 + 7 + 3 = \\dots$", options: ['28', '30', '32', '25'], correct: '30', difficulty: 1, topic: 'Mental Math' },
+                { id: 'd3_8', text: "Selisih nilai angka 3 pada 35 dan 13 adalah...", options: ['2', '27', '22', '0'], correct: '27', difficulty: 3, topic: 'Place Value' },
+                { id: 'd3_9', text: "$4 \\times 5$ artinya penjumlahan berulang angka ... sebanyak ... kali.", options: ['4 sebanyak 5', '5 sebanyak 4', '4 sebanyak 4', '5 sebanyak 5'], correct: '5 sebanyak 4', difficulty: 2, topic: 'Concept' },
+                { id: 'd3_10', text: "Ada 20 roda mobil. Berapa banyak mobil yang ada?", options: ['4', '5', '10', '8'], correct: '5', difficulty: 2, topic: 'Division' },
+                // D4 (31-40)
+                { id: 'd4_1', text: "Bilangan mana yang tidak bisa dibagi 2?", options: ['14', '28', '31', '10'], correct: '31', difficulty: 1, topic: 'Division' },
+                { id: 'd4_2', text: "Jika $\\triangle + \\triangle + \\triangle = 12$, nilai $\\triangle \\times 2 = \\dots$", options: ['4', '8', '6', '10'], correct: '8', difficulty: 2, topic: 'Algebra' },
+                { id: 'd4_3', text: "Mana lebih besar: 'Setengah dari 10' atau 'Seperempat dari 20'?", options: ['Setengah dari 10', 'Seperempat dari 20', 'Sama Besar', 'Tidak tahu'], correct: 'Sama Besar', difficulty: 2, topic: 'Fractions' },
+                { id: 'd4_4', text: "Umur Ayah 38. Ibu 4 tahun lebih muda. Umur Ibu?", options: ['42', '34', '32', '36'], correct: '34', difficulty: 1, topic: 'Word Problem' },
+                { id: 'd4_5', text: "Bus bawa 25 orang. Turun 5, naik 8. Penumpang sekarang?", options: ['28', '20', '33', '30'], correct: '28', difficulty: 2, topic: 'Arithmetic' },
+                { id: 'd4_6', text: "Pukul 04.30. Setengah jam yang lalu adalah pukul...", options: ['04.00', '05.00', '03.30', '04.15'], correct: '04.00', difficulty: 2, topic: 'Time' },
+                { id: 'd4_7', text: "$300 + \\dots + 8 = 358$", options: ['5', '50', '500', '58'], correct: '50', difficulty: 1, topic: 'Place Value' },
+                { id: 'd4_8', text: "Susun bilangan 3-digit terbesar dari: $0, 9, 1$.", options: ['910', '901', '190', '109'], correct: '910', difficulty: 2, topic: 'Number Logic' },
+                { id: 'd4_9', text: "$10$ kurangnya dari $500$ adalah...", options: ['490', '510', '400', '450'], correct: '490', difficulty: 1, topic: 'Arithmetic' },
+                { id: 'd4_10', text: "$125 + 125 + 125 + 125 = \\dots \\times 125$", options: ['4', '5', '3', '10'], correct: '4', difficulty: 2, topic: 'Multiplication' }
+            ],
+
+            // === LEVEL EXPLORATION (Total 40 Soal) ===
+            exploration: [
+                // E1 (1-10)
+                { id: 'e1_1', text: "Jika $A - 150 = 300$, berapakah $A + 50$?", options: ['450', '500', '400', '350'], correct: '500', difficulty: 2, topic: 'Algebra' },
+                { id: 'e1_2', text: "$4 \\times 8 = \\dots \\times 4$", options: ['8', '4', '32', '12'], correct: '8', difficulty: 1, topic: 'Commutative' },
+                { id: 'e1_3', text: "Sisa dari $32 \\div 5$ dikalikan 10 hasilnya...", options: ['20', '40', '10', '30'], correct: '20', difficulty: 2, topic: 'Arithmetic' },
+                { id: 'e1_4', text: "$70 \\times 10 = \\dots$ ratusan.", options: ['7', '70', '700', '10'], correct: '7', difficulty: 2, topic: 'Place Value' },
+                { id: 'e1_5', text: "Tinggi A 135 cm. B 1m 40cm. Siapa lebih tinggi?", options: ['A', 'B', 'Sama', 'Tidak Tahu'], correct: 'B', difficulty: 1, topic: 'Measurement' },
+                { id: 'e1_6', text: "Tali 2 m dipotong 4 bagian sama. Panjang per potong?", options: ['50 cm', '25 cm', '40 cm', '20 cm'], correct: '50 cm', difficulty: 2, topic: 'Measurement' },
+                { id: 'e1_7', text: "Berat 3 apel = 1 mangga (600g). Berat 1 apel?", options: ['200g', '300g', '150g', '100g'], correct: '200g', difficulty: 2, topic: 'Logic' },
+                { id: 'e1_8', text: "Belanja Rp 8.000, bayar Rp 10.000. Kembalian 4 keping sama. Kepingan berapa?", options: ['Rp 500', 'Rp 200', 'Rp 100', 'Rp 1000'], correct: 'Rp 500', difficulty: 2, topic: 'Money' },
+                { id: 'e1_9', text: "1 kg kapas dan 1 kg besi. Mana lebih berat?", options: ['Kapas', 'Besi', 'Sama Berat', 'Tergantung'], correct: 'Sama Berat', difficulty: 3, topic: 'Logic' },
+                { id: 'e1_10', text: "Buku A 120 hal. Buku B 2x lebih tebal. Tebal B?", options: ['240', '360', '122', '60'], correct: '240', difficulty: 1, topic: 'Arithmetic' },
+                // E2 (11-20)
+                { id: 'e2_1', text: "Uang Susi 2x Budi. Budi Rp 400. Total uang mereka?", options: ['800', '1200', '1000', '600'], correct: '1200', difficulty: 2, topic: 'Word Problem' },
+                { id: 'e2_2', text: "Ada 5 kandang, isi 6 kelinci. 3 kabur. Sisa kelinci?", options: ['27', '30', '33', '15'], correct: '27', difficulty: 2, topic: 'Arithmetic' },
+                { id: 'e2_3', text: "Hitung: $54 + 99 = 54 + 100 - \\dots$", options: ['1', '99', '10', '54'], correct: '1', difficulty: 2, topic: 'Mental Math' },
+                { id: 'e2_4', text: "$4 \\times 25 = 100$. Maka $8 \\times 25 = \\dots$", options: ['200', '150', '300', '250'], correct: '200', difficulty: 2, topic: 'Mental Math' },
+                { id: 'e2_5', text: "$240 \\div 6 = \\dots$", options: ['40', '4', '60', '30'], correct: '40', difficulty: 1, topic: 'Division' },
+                { id: 'e2_6', text: "Tambah berapa ke 1.950 agar jadi 2.000?", options: ['50', '150', '500', '5'], correct: '50', difficulty: 1, topic: 'Arithmetic' },
+                { id: 'e2_7', text: "Film 13.45 - 15.15. Durasi?", options: ['1 jam 30 menit', '2 jam', '1 jam 15 menit', '1 jam 45 menit'], correct: '1 jam 30 menit', difficulty: 3, topic: 'Time' },
+                { id: 'e2_8', text: "150 menit = ... jam ... menit.", options: ['2 jam 30 menit', '1 jam 50 menit', '2 jam 10 menit', '3 jam'], correct: '2 jam 30 menit', difficulty: 2, topic: 'Time' },
+                { id: 'e2_9', text: "Sekarang 20.00. 15 menit lalu?", options: ['19.45', '19.15', '20.15', '19.30'], correct: '19.45', difficulty: 2, topic: 'Time' },
+                { id: 'e2_10', text: "Ayah kerja 08.00 - 16.00. Istirahat 1 jam. Kerja efektif?", options: ['7 jam', '8 jam', '9 jam', '6 jam'], correct: '7 jam', difficulty: 2, topic: 'Time' },
+                // E3 (21-30)
+                { id: 'e3_1', text: "Pukul 10 malam format 24 jam?", options: ['22.00', '20.00', '10.00', '21.00'], correct: '22.00', difficulty: 1, topic: 'Time' },
+                { id: 'e3_2', text: "$\\frac{1}{3}$ uang saya Rp 2.000. Total uang?", options: ['6.000', '4.000', '2.000', '8.000'], correct: '6.000', difficulty: 2, topic: 'Fractions' },
+                { id: 'e3_3', text: "Lebih kecil: $\\frac{1}{2}$ dari 10 atau $\\frac{1}{4}$ dari 16?", options: ['1/4 dari 16', '1/2 dari 10', 'Sama', 'Tidak Tahu'], correct: '1/4 dari 16', difficulty: 3, topic: 'Fractions' },
+                { id: 'e3_4', text: "Pecahan $\\frac{6}{10}$ disederhanakan jadi...", options: ['3/5', '1/2', '2/3', '4/5'], correct: '3/5', difficulty: 2, topic: 'Fractions' },
+                { id: 'e3_5', text: "Beli 3 pensil @Rp1.500. Bayar Rp5.000. Kembali?", options: ['Rp 500', 'Rp 1.000', 'Rp 1.500', 'Pas'], correct: 'Rp 500', difficulty: 2, topic: 'Money' },
+                { id: 'e3_6', text: "Volume kubus 8 satuan. Sisi?", options: ['2', '4', '8', '3'], correct: '2', difficulty: 2, topic: 'Geometry' },
+                { id: 'e3_7', text: "Sudut siku-siku besarnya ... derajat.", options: ['90', '180', '45', '60'], correct: '90', difficulty: 1, topic: 'Geometry' },
+                { id: 'e3_8', text: "Keliling persegi 20 cm. Luasnya?", options: ['25', '20', '100', '16'], correct: '25', difficulty: 3, topic: 'Geometry' },
+                { id: 'e3_9', text: "Pola: $1.250, 1.500, 1.750, \\dots$", options: ['2.000', '2.250', '1.900', '2.500'], correct: '2.000', difficulty: 1, topic: 'Pattern' },
+                { id: 'e3_10', text: "$3.000 - 1.245 = \\dots$", options: ['1.755', '1.855', '2.755', '1.765'], correct: '1.755', difficulty: 2, topic: 'Arithmetic' },
+                // E4 (31-40)
+                { id: 'e4_1', text: "Jika $4P = 480$, maka $P = \\dots$", options: ['120', '110', '102', '12'], correct: '120', difficulty: 2, topic: 'Algebra' },
+                { id: 'e4_2', text: "Pembagian $146 \\div 3$ sisa $R$. $R$ adalah...", options: ['2', '1', '0', '3'], correct: '2', difficulty: 3, topic: 'Division' },
+                { id: 'e4_3', text: "$\\frac{2}{3}$ dari 24 kelereng merah. Jumlahnya?", options: ['16', '12', '18', '8'], correct: '16', difficulty: 2, topic: 'Fractions' },
+                { id: 'e4_4', text: "$1 - \\frac{2}{7} - \\frac{3}{7} = \\dots$", options: ['2/7', '1/7', '3/7', '0'], correct: '2/7', difficulty: 2, topic: 'Fractions' },
+                { id: 'e4_5', text: "3 km 40 m = ... m.", options: ['3040', '3400', '3004', '340'], correct: '3040', difficulty: 2, topic: 'Measurement' },
+                { id: 'e4_6', text: "Berat 2 beras + 1 gula = 8kg. Gula 2kg. 1 beras?", options: ['3 kg', '4 kg', '2 kg', '6 kg'], correct: '3 kg', difficulty: 3, topic: 'Algebra' },
+                { id: 'e4_7', text: "$5.000$ gram + $2$ kg = ... kg.", options: ['7', '52', '5,2', '5002'], correct: '7', difficulty: 2, topic: 'Measurement' },
+                { id: 'e4_8', text: "Persegi panjang keliling 20. Panjang 6. Lebar?", options: ['4', '14', '7', '3'], correct: '4', difficulty: 2, topic: 'Geometry' },
+                { id: 'e4_9', text: "Sisi persegi dikali 2. Luas jadi ... kali.", options: ['4', '2', '8', '16'], correct: '4', difficulty: 3, topic: 'Concept' },
+                { id: 'e4_10', text: "$\\frac{12}{16} + \\frac{1}{4}$ sederhana?", options: ['1', '3/4', '13/16', '7/8'], correct: '1', difficulty: 2, topic: 'Fractions' }
+            ],
+
+            // === LEVEL MASTERY (Total 40 Soal) ===
+            mastery: [
+                // M1 (1-10)
+                { id: 'm1_1', text: "$\\frac{5}{9}$ tabungan Budi Rp50.000. Total?", options: ['90.000', '100.000', '45.000', '80.000'], correct: '90.000', difficulty: 2, topic: 'Fractions' },
+                { id: 'm1_2', text: "$10 - 3 \\times 2 = \\dots$", options: ['4', '14', '20', '16'], correct: '4', difficulty: 1, topic: 'PEMDAS' },
+                { id: 'm1_3', text: "Jika $200 \\div \\square = 40$, $\\square = \\dots$", options: ['5', '50', '4', '20'], correct: '5', difficulty: 2, topic: 'Algebra' },
+                { id: 'm1_4', text: "Jarum jam 12 ke 3. Sudut?", options: ['90', '180', '45', '60'], correct: '90', difficulty: 1, topic: 'Angles' },
+                { id: 'm1_5', text: "Sudut terkecil pukul 05.00?", options: ['150', '120', '180', '135'], correct: '150', difficulty: 3, topic: 'Angles' },
+                { id: 'm1_6', text: "Sudut $X$ dan $50^\\circ$ siku-siku. $X$?", options: ['40', '130', '50', '90'], correct: '40', difficulty: 1, topic: 'Angles' },
+                { id: 'm1_7', text: "Ember bocor 50ml/menit. 10 menit hilang berapa liter?", options: ['0,5', '5', '0,05', '500'], correct: '0,5', difficulty: 3, topic: 'Conversion' },
+                { id: 'm1_8', text: "Volume kubus 27. Rusuk?", options: ['3', '9', '6', '1'], correct: '3', difficulty: 2, topic: 'Volume' },
+                { id: 'm1_9', text: "Susu 1 L. Minum 200ml & 350ml. Sisa?", options: ['450 ml', '550 ml', '650 ml', '350 ml'], correct: '450 ml', difficulty: 2, topic: 'Arithmetic' },
+                { id: 'm1_10', text: "Rata-rata 4, 5, 8, 3?", options: ['5', '6', '4', '20'], correct: '5', difficulty: 2, topic: 'Average' },
+                // M2 (11-20)
+                { id: 'm2_1', text: "Modus dari 7, 8, 9, 7, 8, 7, 10?", options: ['7', '8', '9', '10'], correct: '7', difficulty: 1, topic: 'Data' },
+                { id: 'm2_2', text: "$40 + 10 \\times 5 - 20 = \\dots$", options: ['70', '230', '90', '150'], correct: '70', difficulty: 2, topic: 'PEMDAS' },
+                { id: 'm2_3', text: "$(150 - 50) \\div 5 \\times 2 = \\dots$", options: ['40', '10', '100', '25'], correct: '40', difficulty: 2, topic: 'PEMDAS' },
+                { id: 'm2_4', text: "Bilangan $32.456$. Digit 5 dikali 100?", options: ['5', '50', '500', '0,05'], correct: '5', difficulty: 3, topic: 'Place Value' },
+                { id: 'm2_5', text: "$125 \\times 8 + 125 \\times 2 = \\dots$", options: ['1250', '1000', '250', '1500'], correct: '1250', difficulty: 2, topic: 'Distributive' },
+                { id: 'm2_6', text: "Satuan dari $15 \\times 15 \\times 15$?", options: ['5', '0', '1', '25'], correct: '5', difficulty: 2, topic: 'Number Theory' },
+                { id: 'm2_7', text: "$3 \\frac{1}{2} + 2 \\frac{1}{4} = \\dots$", options: ['5 3/4', '5 1/2', '5 1/4', '6'], correct: '5 3/4', difficulty: 2, topic: 'Fractions' },
+                { id: 'm2_8', text: "Potongan $1/4$ m dari tali 2 m?", options: ['8', '4', '6', '2'], correct: '8', difficulty: 2, topic: 'Fractions' },
+                { id: 'm2_9', text: "$10 - 0,45 = \\dots$", options: ['9,55', '9,45', '10,45', '0,55'], correct: '9,55', difficulty: 2, topic: 'Decimals' },
+                { id: 'm2_10', text: "$0,2 \\times 0,3 = \\dots$", options: ['0,06', '0,6', '0,5', '0,05'], correct: '0,06', difficulty: 2, topic: 'Decimals' },
+                // M3 (21-30)
+                { id: 'm3_1', text: "Keliling persegi A 12. B 24. Sisi B ... kali Sisi A.", options: ['2', '4', '1/2', '3'], correct: '2', difficulty: 3, topic: 'Ratio' },
+                { id: 'm3_2', text: "Luas segitiga alas 10 tinggi 8?", options: ['40', '80', '18', '20'], correct: '40', difficulty: 1, topic: 'Geometry' },
+                { id: 'm3_3', text: "Balok vol 120. P=6 L=4. T?", options: ['5', '6', '10', '4'], correct: '5', difficulty: 2, topic: 'Volume' },
+                { id: 'm3_4', text: "Segitiga sama kaki, sudut kaki $70^\\circ$. Puncak?", options: ['40', '70', '110', '20'], correct: '40', difficulty: 2, topic: 'Angles' },
+                { id: 'm3_5', text: "Jajargenjang tumpul $120^\\circ$. Lancip?", options: ['60', '30', '120', '90'], correct: '60', difficulty: 2, topic: 'Angles' },
+                { id: 'm3_6', text: "Jumlah sudut segiempat?", options: ['360', '180', '90', '270'], correct: '360', difficulty: 1, topic: 'Angles' },
+                { id: 'm3_7', text: "Sudut $A, B$ pelurus. $A=3B$. Besar $B$?", options: ['45', '135', '60', '30'], correct: '45', difficulty: 3, topic: 'Algebra' },
+                { id: 'm3_8', text: "25% dari 200.000?", options: ['50.000', '25.000', '40.000', '20.000'], correct: '50.000', difficulty: 2, topic: 'Percent' },
+                { id: 'm3_9', text: "Diskon 20% baju Rp100rb. Bayar?", options: ['80.000', '20.000', '120.000', '90.000'], correct: '80.000', difficulty: 2, topic: 'Percent' },
+                { id: 'm3_10', text: "Rata-rata 3 ulangan 80. Ke-4 dapat 100. Baru?", options: ['85', '90', '82', '88'], correct: '85', difficulty: 3, topic: 'Average' },
+                // M4 (31-40)
+                { id: 'm4_1', text: "Dadu dilempar. Ganjil?", options: ['3/6', '1/6', '2/6', '4/6'], correct: '3/6', difficulty: 1, topic: 'Probability' },
+                { id: 'm4_2', text: "Kelas 40 anak, 60% putri. Putra?", options: ['16', '24', '20', '14'], correct: '16', difficulty: 2, topic: 'Percent' },
+                { id: 'm4_3', text: "Jumlah 2 bil 450. Besar:Kecil = 4 sisa 50. Besar?", options: ['370', '350', '400', '320'], correct: '370', difficulty: 3, topic: 'Algebra' },
+                { id: 'm4_4', text: "Budi pakai $1/4$ uang, lalu $2/5$ sisanya. Sisa 36rb. Awal?", options: ['80.000', '72.000', '60.000', '100.000'], correct: '80.000', difficulty: 3, topic: 'Fractions' },
+                { id: 'm4_5', text: "Rasio Ali:Budi 3:5. Ali +50rb jadi 1:1. Budi?", options: ['75.000', '125.000', '100.000', '50.000'], correct: '75.000', difficulty: 3, topic: 'Ratio' },
+                { id: 'm4_6', text: "Perbandingan P:L = 5:3. Keliling 64. Luas?", options: ['240', '200', '150', '320'], correct: '240', difficulty: 3, topic: 'Geometry' },
+                { id: 'm4_7', text: "Segilima beraturan. Sudut dalam?", options: ['108', '120', '72', '90'], correct: '108', difficulty: 3, topic: 'Geometry' },
+                { id: 'm4_8', text: "Keran A 6L/m, B -4L/m. Tangki 100L penuh?", options: ['50', '25', '20', '100'], correct: '50', difficulty: 3, topic: 'Rate' },
+                { id: 'm4_9', text: "Mobil A 60km/h (08.00). B 80km/h (09.00). Susul?", options: ['12.00', '11.00', '13.00', '10.30'], correct: '12.00', difficulty: 3, topic: 'Speed' },
+                { id: 'm4_10', text: "Banyak persegi di papan catur 3x3?", options: ['14', '9', '10', '13'], correct: '14', difficulty: 3, topic: 'Combinatorics' }
+            ]
+        };
+
+        // ==========================================
+        // 2. STATE VARIABLES
+        // ==========================================
+        let currentStage = 'routing'; 
+        let currentQuestionIndex = 0;
+        let totalQuestionsAnswered = 0;
+        let score = 0; 
+        let userProfile = {};
+        let activeQuestions = [];
+        let selectedOption = null;
+        const totalTestLimit = 15; 
+        let maxPossibleScore = 0; // Dynamic tracking
+
+        // ==========================================
+        // 3. CORE FUNCTIONS
+        // ==========================================
+        const screens = {
+            welcome: document.getElementById('screen-welcome'),
+            question: document.getElementById('screen-question'),
+            analyzing: document.getElementById('screen-analyzing'),
+            result: document.getElementById('screen-result')
+        };
+        const timerDisplay = document.getElementById('timer-display');
+        const progressBar = document.getElementById('progress-bar');
+        const nextBtn = document.getElementById('btn-next');
+
+        function startTest() {
+            const name = document.getElementById('input-name').value;
+            const age = parseInt(document.getElementById('input-age').value);
+            
+            if(!name) { alert("Mohon isi nama terlebih dahulu."); return; }
+
+            userProfile = { name, age };
+            
+            showScreen('question');
+            timerDisplay.classList.remove('hidden');
+            document.getElementById('progress-container').classList.remove('hidden');
+            
+            generateRoutingQuestions(age);
+            loadQuestion();
+        }
+
+        function getRandomQuestions(array, n) {
+            const shuffled = array.sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, n);
+        }
+
+        function generateRoutingQuestions(age) {
+            activeQuestions = [];
+            
+            // Logic Routing Berdasarkan UMUR
+            // 6-7 Thn -> Discovery
+            // 8-9 Thn -> Exploration
+            // 10+ Thn -> Mastery
+            
+            if(age <= 7) {
+                // Mix: 4 Easy Disc, 1 Med Disc
+                activeQuestions = getRandomQuestions(questionBank.discovery, 5);
+            } else if (age <= 9) {
+                // Mix: 2 Hard Disc, 3 Easy Exp
+                const dPart = getRandomQuestions(questionBank.discovery.filter(q => q.difficulty >= 2), 2);
+                const ePart = getRandomQuestions(questionBank.exploration, 3);
+                activeQuestions = dPart.concat(ePart);
+            } else {
+                // Mix: 2 Hard Exp, 3 Easy Mas
+                const ePart = getRandomQuestions(questionBank.exploration.filter(q => q.difficulty >= 2), 2);
+                const mPart = getRandomQuestions(questionBank.mastery, 3);
+                activeQuestions = ePart.concat(mPart);
+            }
+            
+            currentStage = 'routing';
+            updateProgress(5);
+        }
+
+        function loadQuestion() {
+            selectedOption = null;
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            const q = activeQuestions[currentQuestionIndex];
+            
+            document.getElementById('q-number').innerText = totalQuestionsAnswered + 1;
+            document.getElementById('q-text').innerHTML = q.text;
+            
+            document.getElementById('q-stage').innerText = currentStage === 'routing' ? 'Fase: Kalibrasi Awal' : 'Fase: Adaptif Presisi';
+            
+            const diffBadge = document.getElementById('q-difficulty-badge');
+            if (q.difficulty === 1) { diffBadge.innerText = "Basic"; diffBadge.className = "bg-green-100 text-green-700 text-xs px-2 py-1 rounded border border-green-200"; }
+            else if (q.difficulty === 2) { diffBadge.innerText = "Intermediate"; diffBadge.className = "bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded border border-yellow-200"; }
+            else { diffBadge.innerText = "Advanced"; diffBadge.className = "bg-red-100 text-red-700 text-xs px-2 py-1 rounded border border-red-200"; }
+
+            const optionsContainer = document.getElementById('q-options');
+            optionsContainer.innerHTML = '';
+            
+            let displayOptions = [...q.options]; 
+            displayOptions.sort(() => Math.random() - 0.5); 
+
+            displayOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-card w-full text-left border-2 border-gray-200 rounded-xl p-4 transition-all hover:shadow-md flex items-center group bg-white';
+                btn.innerHTML = `
+                    <div class="option-radio w-6 h-6 rounded-full border-2 border-gray-300 mr-4 flex-shrink-0 flex items-center justify-center group-hover:border-blue-400"></div>
+                    <span class="text-gray-700 font-medium text-lg">${opt}</span>
+                `;
+                btn.onclick = () => selectOption(btn, opt);
+                optionsContainer.appendChild(btn);
+            });
+
+            MathJax.typesetPromise();
+        }
+
+        function selectOption(el, value) {
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected-option', 'border-blue-500', 'ring-2', 'ring-blue-200');
+                card.querySelector('.option-radio').innerHTML = '';
+                card.querySelector('.option-radio').classList.remove('border-blue-600', 'bg-blue-600');
+            });
+            el.classList.add('selected-option', 'border-blue-500', 'ring-2', 'ring-blue-200');
+            el.querySelector('.option-radio').innerHTML = '<div class="w-2.5 h-2.5 bg-white rounded-full"></div>';
+            el.querySelector('.option-radio').classList.add('border-blue-600', 'bg-blue-600');
+
+            selectedOption = value;
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function submitAnswer() {
+            const currentQ = activeQuestions[currentQuestionIndex];
+            
+            maxPossibleScore += (currentQ.difficulty * 10);
+
+            if(selectedOption === currentQ.correct) {
+                score += (currentQ.difficulty * 10); 
+            }
+
+            totalQuestionsAnswered++;
+            currentQuestionIndex++;
+            updateProgress((totalQuestionsAnswered / totalTestLimit) * 100);
+
+            if (currentStage === 'routing' && currentQuestionIndex >= activeQuestions.length) {
+                simulateAdaptiveThinking();
+            } else if (currentStage !== 'routing' && currentQuestionIndex >= activeQuestions.length) {
+                finishTest();
+            } else if (totalQuestionsAnswered >= totalTestLimit) {
+                finishTest();
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function simulateAdaptiveThinking() {
+            showScreen('analyzing');
+            
+            setTimeout(() => {
+                activeQuestions = []; 
+                currentQuestionIndex = 0;
+                let nextLevel = '';
+                let msg = '';
+
+                // Reset Score tracking for next phase relative calculation
+                // But keep total score accumulating
+                
+                // Logic Adaptive Routing
+                if (score < 30) {
+                    nextLevel = 'discovery';
+                    activeQuestions = getRandomQuestions(questionBank.discovery, 10);
+                    msg = "Mendeteksi kebutuhan fundamental. Mengarahkan ke modul Discovery.";
+                } else if (score < 80) {
+                    nextLevel = 'exploration';
+                    activeQuestions = getRandomQuestions(questionBank.exploration, 10);
+                    msg = "Fondasi cukup kuat. Mengarahkan ke modul Exploration.";
+                } else {
+                    nextLevel = 'mastery';
+                    activeQuestions = getRandomQuestions(questionBank.mastery, 10);
+                    msg = "Performa sangat baik. Membuka modul Mastery (Expert).";
+                }
+
+                document.getElementById('analysis-text').innerText = msg;
+                currentStage = nextLevel;
+                showScreen('question');
+                loadQuestion();
+
+            }, 2500); 
+        }
+
+        function finishTest() {
+            showScreen('result');
+            timerDisplay.classList.add('hidden');
+            
+            // --- LOGIKA PRESISI HASIL ---
+            // Menggabungkan Stage Akhir + Persentase Skor di Stage Tersebut
+            
+            // Hitung rasio performa di stage terakhir
+            // (Total Skor / Max Possible di test ini) - Simplified approach
+            // Kita pakai pendekatan bucket skor total akhir
+            
+            let finalLevelName = "";
+            let description = "";
+            let strength = "";
+            let focus = "";
+
+            // Normalisasi skor ke skala 0-100 relatif terhadap stage
+            // Stage Discovery (Max score approx 150)
+            // Stage Exploration (Max score approx 300)
+            // Stage Mastery (Max score approx 450)
+            
+            if (currentStage === 'discovery') {
+                if (score < 50) {
+                    finalLevelName = "DISCOVERY 1";
+                    description = "Siswa berada di tahap awal pengenalan angka. Perlu fokus pada konsep bilangan 1-20 dan penjumlahan sederhana menggunakan benda konkret.";
+                    strength = "Pengenalan Angka";
+                    focus = "Operasi Hitung Dasar";
+                } else if (score < 90) {
+                    finalLevelName = "DISCOVERY 2";
+                    description = "Siswa sudah mengenal bilangan hingga 40. Perlu penguatan pada konsep puluhan/satuan dan pengurangan sederhana.";
+                    strength = "Urutan Bilangan";
+                    focus = "Place Value & Pengurangan";
+                } else if (score < 120) {
+                    finalLevelName = "DISCOVERY 3";
+                    description = "Siswa menguasai bilangan hingga 100. Siap untuk operasi hitung campuran sederhana dan soal cerita dasar.";
+                    strength = "Aritmatika Dasar";
+                    focus = "Soal Cerita Logika";
+                } else {
+                    finalLevelName = "DISCOVERY 4";
+                    description = "Sangat mahir untuk level dasar. Siswa memiliki intuisi angka yang kuat dan siap diperkenalkan konsep perkalian dasar.";
+                    strength = "Mental Math";
+                    focus = "Perkalian & Pembagian";
+                }
+            } 
+            else if (currentStage === 'exploration') {
+                if (score < 140) {
+                    finalLevelName = "EXPLORATION 1";
+                    description = "Masa transisi ke konsep abstrak. Perlu banyak latihan pada konsep pecahan sederhana dan operasi bilangan 4 digit.";
+                    strength = "Operasi Bilangan Bulat";
+                    focus = "Konsep Pecahan";
+                } else if (score < 180) {
+                    finalLevelName = "EXPLORATION 2";
+                    description = "Siswa nyaman dengan bilangan besar. Fokus selanjutnya adalah logika geometri (sudut/luas) dan konversi satuan.";
+                    strength = "Logika Aritmatika";
+                    focus = "Geometri & Pengukuran";
+                } else if (score < 220) {
+                    finalLevelName = "EXPLORATION 3";
+                    description = "Kemampuan logika kuat. Perlu tantangan lebih di operasi pecahan campuran, desimal, dan persentase.";
+                    strength = "Pemecahan Masalah";
+                    focus = "Desimal & Persen";
+                } else {
+                    finalLevelName = "EXPLORATION 4";
+                    description = "Sangat siap untuk materi tingkat lanjut. Logika geometri dan aljabar dasar sudah mulai terbentuk.";
+                    strength = "Konsep Abstrak";
+                    focus = "Pre-Algebra";
+                }
+            } 
+            else { // Mastery
+                if (score < 260) {
+                    finalLevelName = "MASTERY 1";
+                    description = "Masuk level mahir. Perlu penguatan pada strategi heuristik (working backwards) dan rasio.";
+                    strength = "Kalkulasi Cepat";
+                    focus = "Heuristik & Rasio";
+                } else if (score < 300) {
+                    finalLevelName = "MASTERY 2";
+                    description = "Menguasai sebagian besar materi SD. Fokus pada kecepatan dan akurasi dalam soal geometri kompleks (lingkaran/volume).";
+                    strength = "Aljabar Dasar";
+                    focus = "Geometri Dimensi 3";
+                } else if (score < 350) {
+                    finalLevelName = "MASTERY 3";
+                    description = "Level Olimpiade Dasar. Siswa mampu memecahkan masalah non-rutin. Tantang dengan soal kombinatorika dan teori bilangan.";
+                    strength = "Analisis Logika";
+                    focus = "Teori Bilangan";
+                } else {
+                    finalLevelName = "MASTERY 4 (EXPERT)";
+                    description = "Performa luar biasa. Siswa memiliki potensi kompetisi matematika tingkat tinggi. Materi SMP awal mungkin sudah bisa diberikan.";
+                    strength = "Semua Aspek";
+                    focus = "Materi Olimpiade Lanjut";
+                }
+            }
+
+            document.getElementById('result-level').innerText = finalLevelName;
+            document.getElementById('result-desc').innerText = description;
+            document.getElementById('result-strength').innerText = strength;
+            document.getElementById('result-focus').innerText = focus;
+            
+            // Normalize score for display roughly 0-120 scale
+            let displayScore = Math.min(120, Math.floor(score / 3)); 
+            document.getElementById('result-score').innerText = displayScore;
+        }
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            if(screens[screenName]) screens[screenName].classList.remove('hidden');
+        }
+
+        function updateProgress(percent) {
+            if(percent > 100) percent = 100;
+            progressBar.style.width = percent + '%';
+        }
+    </script>
+</body>
+</html>
