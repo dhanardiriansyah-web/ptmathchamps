@@ -8,7 +8,8 @@
         :root {
             --primary: #FF9F1C; /* Math Champs Orange */
             --secondary: #2EC4B6; /* Teal/Blueish */
-            --accent: #E71D36; /* Red for Hearts */
+            --accent: #E71D36; /* Red for Hearts/Wrong */
+            --success: #4CC9F0; /* Green/Success */
             --dark: #011627;
             --light: #FDFFFC;
             --bg: #f0f4f8;
@@ -67,7 +68,9 @@
         }
 
         .heart { color: var(--accent); }
-        .timer { color: var(--secondary); }
+        
+        /* Timer hidden visually but logic remains */
+        .timer-hidden { display: none; } 
 
         /* SCREENS */
         .screen {
@@ -155,15 +158,50 @@
             cursor: pointer;
             transition: all 0.2s;
             font-weight: 500;
+            position: relative;
         }
 
-        .option-btn:hover {
+        .option-btn:hover:not(:disabled) {
             border-color: var(--secondary);
             background: #f0fffd;
         }
 
-        .option-btn:active {
+        .option-btn:active:not(:disabled) {
             transform: scale(0.98);
+        }
+
+        /* States for answers */
+        .option-btn.correct {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .option-btn.wrong {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .option-btn:disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        /* FEEDBACK SECTION */
+        .feedback-container {
+            margin-top: 25px;
+            width: 100%;
+            display: none; /* Hidden until answered */
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feedback-msg {
+            font-weight: bold;
+            font-size: 1.1rem;
         }
 
         /* RESULT SCREEN */
@@ -228,6 +266,12 @@
             transform: translateY(-2px);
             filter: brightness(1.1);
         }
+        
+        .btn-next {
+            background: var(--secondary);
+            box-shadow: 0 5px 15px rgba(46, 196, 182, 0.4);
+            width: 100%;
+        }
 
         /* Utility for Math */
         .fraction {
@@ -242,6 +286,11 @@
         }
         .fraction span.bottom {
             border-top: thin solid black;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width: 480px) {
@@ -263,9 +312,7 @@
             <div class="status-item">
                 <span class="heart">❤️</span> <span id="livesDisplay">3</span>
             </div>
-            <div class="status-item">
-                <span class="timer">⏱️</span> <span id="timerDisplay">60:00</span>
-            </div>
+            <!-- Timer hidden from UI but exists in logic -->
         </div>
     </header>
 
@@ -279,11 +326,11 @@
         <div class="rules-box">
             <h3>Cara Bermain:</h3>
             <ul style="padding-left: 20px;">
-                <li>Waktu pengerjaan maksimal <strong>60 Menit</strong>.</li>
                 <li>Kamu punya <strong>3 Nyawa</strong>.</li>
-                <li>Jika jawaban salah, nyawa berkurang.</li>
+                <li>Setiap jawaban salah akan mengurangi nyawa.</li>
                 <li>Jika nyawa habis, tes berhenti dan levelmu ditentukan saat itu juga.</li>
-                <li>Jawablah dengan jujur tanpa kalkulator.</li>
+                <li>Kerjakan dengan tenang dan jujur.</li>
+                <!-- Removed explicit time limit rule -->
             </ul>
         </div>
 
@@ -303,6 +350,12 @@
 
         <div class="options-grid" id="optionsContainer">
             <!-- Pilihan akan muncul di sini -->
+        </div>
+
+        <!-- Feedback & Next Button Area -->
+        <div class="feedback-container" id="feedbackArea">
+            <div class="feedback-msg" id="feedbackMessage">Jawaban Benar!</div>
+            <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()">Soal Berikutnya</button>
         </div>
     </div>
 
@@ -330,15 +383,13 @@
         <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
             Silakan screenshot hasil ini dan kirimkan ke admin Math Champs.
         </p>
-
-        <button class="btn" style="margin-top: 20px; background-color: #6c757d;" onclick="location.reload()">Tes Ulang</button>
+        
+        <!-- Removed Retry Button as requested -->
     </div>
 </div>
 
 <script>
     // --- DATABASE SOAL (60 Soal) ---
-    // Diupdate sesuai TEKS ASLI dari LaTeX untuk kejelasan maksimal.
-    
     const questions = [
         // ==========================================
         // LEVEL D1
@@ -353,25 +404,25 @@
             level: "Discovery 1",
             text: "Perhatikan pola berikut: △, ○, ○, △, ○, ○, △, ... <br>Gambar apakah yang ada di urutan ke-10?",
             options: ["△ (Segitiga)", "○ (Lingkaran)", "□ (Kotak)", "☆ (Bintang)"],
-            answer: 0 // Pola T-C-C (3 item). Ke-10 mod 3 = 1 (Segitiga)
+            answer: 0 
         },
         {
             level: "Discovery 1",
             text: "Adi memiliki 8 stiker. Budi memiliki 3 stiker <b>lebih sedikit</b> daripada Adi.<br>Berapa jumlah stiker Budi?",
             options: ["11", "5", "3", "8"],
-            answer: 1 // 8 - 3 = 5
+            answer: 1 
         },
         {
             level: "Discovery 1",
             text: "Jika □ + □ = 10 dan □ + △ = 8, berapakah nilai △?",
             options: ["5", "3", "2", "4"],
-            answer: 1 // Kotak=5, 5+Tri=8 -> Tri=3
+            answer: 1 
         },
         {
             level: "Discovery 1",
             text: "Ada 5 anak sedang antre membeli es krim. Siti ada di depan Rudi. Eko ada di belakang Rudi. Ani ada di paling depan.<br>Siapakah yang ada di urutan ke-3?",
             options: ["Ani", "Siti", "Rudi", "Eko"],
-            answer: 2 // Ani(1), Siti(2), Rudi(3), Eko(4)
+            answer: 2 
         },
         
         // ==========================================
@@ -387,7 +438,7 @@
             level: "Discovery 2",
             text: "Tuliskan bentuk penjumlahan berulang dari 4 × 3.",
             options: ["4 + 4 + 4", "3 + 3 + 3 + 3", "4 + 3", "3 × 3 × 3 × 3"],
-            answer: 1 // Konsep Singapore Math: group x item. 4 groups of 3 -> 3+3+3+3
+            answer: 1 
         },
         {
             level: "Discovery 2",
@@ -399,13 +450,13 @@
             level: "Discovery 2",
             text: "Aku adalah sebuah bilangan. Jika kamu menambahkan 5 kepadaku, lalu dikurangi 2, hasilnya adalah 20.<br>Bilangan berapakah aku?",
             options: ["15", "17", "23", "13"],
-            answer: 1 // (x+5)-2=20 -> x+3=20 -> x=17
+            answer: 1 
         },
         {
             level: "Discovery 2",
             text: "Tali Merah panjangnya 15 meter. Tali Biru 6 meter <b>lebih panjang</b> dari Tali Merah. Tali Hijau 4 meter <b>lebih pendek</b> dari Tali Biru.<br>Berapa panjang Tali Hijau?",
             options: ["21 m", "17 m", "11 m", "15 m"],
-            answer: 1 // M=15, B=21, H=21-4=17
+            answer: 1 
         },
 
         // ==========================================
@@ -421,7 +472,7 @@
             level: "Discovery 3",
             text: "Tinggi badan Ali 1 m 20 cm. Tinggi badan Budi 105 cm.<br>Siapakah yang lebih tinggi dan berapa selisihnya dalam cm?",
             options: ["Ali, 15 cm", "Budi, 15 cm", "Ali, 25 cm", "Budi, 25 cm"],
-            answer: 0 // Ali=120, Budi=105. 120-105=15
+            answer: 0 
         },
         {
             level: "Discovery 3",
@@ -433,13 +484,13 @@
             level: "Discovery 3",
             text: "Di perpustakaan ada 350 buku cerita dan buku pelajaran. Jumlah buku cerita ada 120 lebih banyak daripada buku pelajaran.<br>Berapa jumlah buku pelajaran?",
             options: ["115", "235", "120", "230"],
-            answer: 0 // C + P = 350, C = P + 120. (P+120)+P=350. 2P=230. P=115.
+            answer: 0 
         },
         {
             level: "Discovery 3",
             text: "Sebuah tiang dipancangkan ke tanah. Setengah bagian ada di dalam tanah, 2 meter ada di dalam air, dan sisanya 3 meter muncul di udara.<br>Berapa meter panjang total tiang tersebut?",
             options: ["5 m", "10 m", "12 m", "8 m"],
-            answer: 1 // Air+Udara = 5m (ini setengahnya). Total = 10m.
+            answer: 1 
         },
 
         // ==========================================
@@ -455,25 +506,25 @@
             level: "Discovery 4",
             text: "Film dimulai pukul 14.45 dan berlangsung selama 1 jam 30 menit.<br>Pukul berapa film tersebut selesai?",
             options: ["16.00", "15.15", "16.15", "15.45"],
-            answer: 2 // 14.45 + 1.30 -> 15.75 -> 16.15
+            answer: 2 
         },
         {
             level: "Discovery 4",
             text: "Sebuah bilangan dibagi 4 menghasilkan 12 dengan sisa 3.<br>Bilangan berapakah itu?",
             options: ["45", "48", "51", "52"],
-            answer: 2 // 4*12 + 3 = 48+3 = 51
+            answer: 2 
         },
         {
             level: "Discovery 4",
             text: "Berapa banyak bilangan 2-digit yang dapat dibentuk dari angka 3, 5, dan 8 jika angka <b>tidak boleh</b> berulang? (Tuliskan semua kemungkinannya)",
             options: ["3 bilangan", "5 bilangan", "6 bilangan", "9 bilangan"],
-            answer: 2 // 35, 38, 53, 58, 83, 85
+            answer: 2 
         },
         {
             level: "Discovery 4",
             text: "Umur Ayah 4 kali umur Ani. Jika selisih umur mereka 27 tahun, berapakah umur Ani?",
             options: ["9 tahun", "7 tahun", "27 tahun", "36 tahun"],
-            answer: 0 // 4u - u = 27 -> 3u = 27 -> u=9
+            answer: 0 
         },
 
         // ==========================================
@@ -495,19 +546,19 @@
             level: "Exploration 1",
             text: "Lantai kamar berbentuk persegi panjang dengan luas 24 m². Jika lebarnya 4 m, berapakah keliling kamar tersebut?",
             options: ["20 m", "10 m", "12 m", "24 m"],
-            answer: 0 // P=6. K = 2(6+4) = 20
+            answer: 0 
         },
         {
             level: "Exploration 1",
             text: "Dua buah persegi memiliki sisi masing-masing 5 cm dan 3 cm. Persegi kecil diletakkan di atas persegi besar.<br>Berapakah luas daerah yang <b>tidak</b> tertutup oleh persegi kecil?",
             options: ["16 cm²", "9 cm²", "25 cm²", "34 cm²"],
-            answer: 0 // 25 - 9 = 16
+            answer: 0 
         },
         {
             level: "Exploration 1",
             text: "Dua bilangan jika dijumlahkan hasilnya 2.500. Jika selisih kedua bilangan itu adalah 500, berapakah bilangan yang <b>terkecil</b>?",
             options: ["1.000", "1.500", "500", "2.000"],
-            answer: 0 // (2500-500)/2 = 1000
+            answer: 0 
         },
 
         // ==========================================
@@ -523,13 +574,13 @@
             level: "Exploration 2",
             text: "Di kelas ada 30 siswa. 2/3 dari siswa adalah perempuan.<br>Berapa jumlah siswa laki-laki?",
             options: ["20", "10", "15", "5"],
-            answer: 1 // 1/3 * 30 = 10
+            answer: 1 
         },
         {
             level: "Exploration 2",
             text: "Sebuah gayung berisi 1 liter air. Air tersebut dituang ke 3 gelas masing-masing berisi 250 ml.<br>Berapa ml sisa air di gayung?",
             options: ["0 ml", "250 ml", "500 ml", "750 ml"],
-            answer: 1 // 1000 - 750 = 250
+            answer: 1 
         },
         {
             level: "Exploration 2",
@@ -541,7 +592,7 @@
             level: "Exploration 2",
             text: "Hitunglah besar sudut terkecil yang dibentuk oleh jarum jam pada pukul 04.00! (Ingat: 1 putaran penuh = 360°)",
             options: ["90°", "100°", "120°", "150°"],
-            answer: 2 // 4 * 30 = 120
+            answer: 2 
         },
 
         // ==========================================
@@ -557,7 +608,7 @@
             level: "Exploration 3",
             text: "Hitunglah: 3 - 1 <span class='fraction'><span>2</span><span class='bottom'>5</span></span> = ...",
             options: ["1 2/5", "1 3/5", "2 3/5", "2 2/5"],
-            answer: 1 // 3 - 1.4 = 1.6 -> 1 3/5
+            answer: 1 
         },
         {
             level: "Exploration 3",
@@ -569,13 +620,13 @@
             level: "Exploration 3",
             text: "Suatu bilangan dikalikan 4, lalu ditambah 8, hasilnya dibagi 2 menjadi 20.<br>Bilangan berapakah itu?",
             options: ["8", "10", "12", "6"],
-            answer: 0 // (4x + 8) / 2 = 20 -> 4x+8 = 40 -> 4x = 32 -> x = 8
+            answer: 0 
         },
         {
             level: "Exploration 3",
             text: "Awalnya ember A berisi 4 liter air lebih banyak dari ember B. Kemudian, 1 liter air dipindahkan dari A ke B.<br>Berapa selisih air di kedua ember sekarang?",
             options: ["2 liter", "3 liter", "4 liter", "0 liter"],
-            answer: 0 // A=5, B=1 (diff 4). Pindah 1 -> A=4, B=2. Diff 2.
+            answer: 0 
         },
 
         // ==========================================
@@ -597,7 +648,7 @@
             level: "Exploration 4",
             text: "Suhu udara naik 2°C setiap jam dari pukul 08.00 sampai 11.00. Jika suhu pukul 08.00 adalah 24°C, berapa suhu pukul 11.00?",
             options: ["26°C", "28°C", "30°C", "32°C"],
-            answer: 2 // 3 jam x 2 = 6. 24+6=30
+            answer: 2 
         },
         {
             level: "Exploration 4",
@@ -609,7 +660,7 @@
             level: "Exploration 4",
             text: "Tali sepanjang 10 meter dipotong menjadi 4 bagian sama panjang. Setiap bagian kemudian dipotong lagi menjadi 2 bagian sama panjang.<br>Berapa meter panjang setiap potongan kecil tersebut?",
             options: ["1.25 m", "2.5 m", "1 m", "0.5 m"],
-            answer: 0 // 10 / 8 = 1.25
+            answer: 0 
         },
 
         // ==========================================
@@ -625,25 +676,25 @@
             level: "Mastery 1",
             text: "Sebuah segitiga memiliki luas 30 cm². Jika alasnya 10 cm, berapakah tingginya?",
             options: ["3 cm", "6 cm", "15 cm", "60 cm"],
-            answer: 1 // L = 1/2 a t -> 30 = 5t -> t=6
+            answer: 1 
         },
         {
             level: "Mastery 1",
             text: "Mobil A melaju dengan kecepatan 60 km/jam. Mobil B melaju 1 km setiap menit.<br>Mobil manakah yang lebih cepat?",
             options: ["Mobil A", "Mobil B", "Sama Cepat", "Tidak tahu"],
-            answer: 2 // 1 km/menit = 60 km/jam
+            answer: 2 
         },
         {
             level: "Mastery 1",
             text: "Perbandingan uang A dan B adalah 3:5. Jika B memberikan Rp 10.000 kepada A, uang mereka menjadi sama banyak.<br>Berapakah total uang mereka?",
             options: ["Rp 40.000", "Rp 80.000", "Rp 160.000", "Rp 100.000"],
-            answer: 1 // Diff 2 unit = 20.000 (karena B -10, A +10, gap menutup 2x). 1 unit=10k. Total 8 unit = 80k.
+            answer: 1 
         },
         {
             level: "Mastery 1",
             text: "Budi berangkat ke kota Z dengan kecepatan 40 km/jam. Ia kembali dari kota Z dengan kecepatan 60 km/jam.<br>Apakah kecepatan rata-rata perjalanan Budi adalah 50 km/jam? Jelaskan dengan hitungan.",
             options: ["50 km/jam", "48 km/jam", "55 km/jam", "100 km/jam"],
-            answer: 1 // Harmonic mean: 2ab/(a+b) = 2*40*60/100 = 48
+            answer: 1 
         },
 
         // ==========================================
@@ -653,7 +704,7 @@
             level: "Mastery 2",
             text: "Hitunglah: 20 - 12 ÷ 4 + 3 × 2 = ...",
             options: ["23", "11", "16", "22"],
-            answer: 0 // 20 - 3 + 6 = 23
+            answer: 0 
         },
         {
             level: "Mastery 2",
@@ -665,13 +716,13 @@
             level: "Mastery 2",
             text: "Rata-rata dari 4 bilangan adalah 9. Jika salah satu bilangan dibuang, rata-ratanya menjadi 8.<br>Berapakah bilangan yang dibuang tersebut?",
             options: ["11", "12", "13", "10"],
-            answer: 1 // Total awal 36. Total baru 3*8=24. 36-24=12
+            answer: 1 
         },
         {
             level: "Mastery 2",
             text: "Di kandang ada ayam dan kambing. Total ada 10 kepala dan 28 kaki.<br>Berapa banyak kambing di kandang tersebut?",
             options: ["4 ekor", "6 ekor", "5 ekor", "8 ekor"],
-            answer: 0 // Asumsi semua ayam (20 kaki). Sisa 8 kaki. 8/2 = 4 kambing.
+            answer: 0 
         },
         {
             level: "Mastery 2",
@@ -687,13 +738,13 @@
             level: "Mastery 3",
             text: "Jika y = 3, hitung nilai dari 2y² - 5.",
             options: ["7", "13", "31", "19"],
-            answer: 1 // 2(9) - 5 = 18 - 5 = 13
+            answer: 1 
         },
         {
             level: "Mastery 3",
             text: "Perbandingan A:B = 2:3. Perbandingan B:C = 4:5. Tentukan perbandingan A:B:C!",
             options: ["2:3:5", "8:12:15", "8:12:10", "6:12:20"],
-            answer: 1 // B disamakan kpk 3&4=12. A=8, B=12, C=15
+            answer: 1 
         },
         {
             level: "Mastery 3",
@@ -705,13 +756,13 @@
             level: "Mastery 3",
             text: "Pedagang menjual barang seharga Rp 120.000 dan untung 20% dari <b>harga beli</b>.<br>Berapakah harga beli barang tersebut?",
             options: ["Rp 100.000", "Rp 96.000", "Rp 144.000", "Rp 110.000"],
-            answer: 0 // 120% = 120k. 100% = 100k
+            answer: 0 
         },
         {
             level: "Mastery 3",
             text: "1/3 uang Andi sama dengan 2/5 uang Budi. Jika selisih uang mereka Rp 5.000, berapa total uang keduanya?",
             options: ["Rp 35.000", "Rp 55.000", "Rp 11.000", "Rp 25.000"],
-            answer: 1 // A/3 = 2B/5 -> 5A = 6B -> A:B = 6:5. Selisih 1 unit = 5000. Total 11 unit = 55.000
+            answer: 1 
         },
 
         // ==========================================
@@ -721,31 +772,31 @@
             level: "Mastery 4",
             text: "Keliling sebuah roda adalah 132 cm. Berapakah jari-jari roda tersebut? (π = 22/7)",
             options: ["21 cm", "14 cm", "42 cm", "7 cm"],
-            answer: 0 // 2*22/7*r = 132 -> 44/7 r = 132 -> r = 21
+            answer: 0 
         },
         {
             level: "Mastery 4",
             text: "Sebuah persegi panjang dipotong setengah lingkaran pada salah satu sisinya. Jika panjang persegi panjang 14 cm dan lebar 10 cm, dan diameter setengah lingkaran adalah 14 cm, hitung keliling bangun gabungan tersebut!",
             options: ["56 cm", "60 cm", "64 cm", "72 cm"],
-            answer: 0 // Sisi lurus: 10+14+10 = 34. Lengkung: 1/2 * 22/7 * 14 = 22. Total 56.
+            answer: 0 
         },
         {
             level: "Mastery 4",
             text: "Dalam diagram lingkaran, sudut juring untuk 'Suka Matematika' adalah 90°. Jika total siswa ada 40 orang, berapa siswa yang suka Matematika?",
             options: ["10 orang", "20 orang", "30 orang", "4 orang"],
-            answer: 0 // 1/4 * 40 = 10
+            answer: 0 
         },
         {
             level: "Mastery 4",
             text: "Sebuah persegi dengan sisi 14 cm. Di dalamnya digambar 4 buah lingkaran identik yang saling bersinggungan. Hitunglah luas daerah di antara lingkaran-lingkaran tersebut!",
             options: ["42 cm²", "154 cm²", "196 cm²", "84 cm²"],
-            answer: 0 // Persegi 196. 4 Lingkaran (r=3.5) -> 4 * 22/7 * 3.5^2 = 154. 196-154 = 42
+            answer: 0 
         },
         {
             level: "Mastery 4",
             text: "Sebuah bak mandi berbentuk balok (100cm x 60cm x 80cm) berisi air setengahnya. Sebuah kubus besi rusuk 20 cm dimasukkan ke dalam bak.<br>Berapa cm kenaikan tinggi air dalam bak tersebut?",
             options: ["1 cm", "2 cm", "1.33 cm", "1.5 cm"],
-            answer: 2 // Vol kubus = 8000. Luas alas bak = 6000. Tinggi = 8000/6000 = 1.33
+            answer: 2 
         }
     ];
 
@@ -753,9 +804,9 @@
     let currentQuestionIndex = 0;
     let lives = 3;
     let timerInterval;
-    let timeRemaining = 3600; // 60 minutes in seconds
-    let startTime;
+    let timeRemaining = 3600; // 60 minutes in seconds (hidden but active)
     let correctAnswers = 0;
+    let isAnswering = true; // Block clicks after answering
 
     // --- DOM ELEMENTS ---
     const startScreen = document.getElementById('startScreen');
@@ -766,8 +817,12 @@
     const progressBar = document.getElementById('progressBar');
     const currentLevelName = document.getElementById('currentLevelName');
     const livesDisplay = document.getElementById('livesDisplay');
-    const timerDisplay = document.getElementById('timerDisplay');
     const statusBar = document.getElementById('statusBar');
+    
+    // Feedback Elements
+    const feedbackArea = document.getElementById('feedbackArea');
+    const feedbackMessage = document.getElementById('feedbackMessage');
+    const nextBtn = document.getElementById('nextBtn');
 
     // --- FUNCTIONS ---
 
@@ -779,23 +834,21 @@
         currentQuestionIndex = 0;
         lives = 3;
         correctAnswers = 0;
-        timeRemaining = 3600;
+        timeRemaining = 3600; // 60 mins
         updateStats();
 
-        startTime = new Date();
-        timerInterval = setInterval(updateTimer, 1000);
+        // Start invisible timer
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimerLogic, 1000);
         
         loadQuestion();
     }
 
-    function updateTimer() {
+    function updateTimerLogic() {
         timeRemaining--;
-        let minutes = Math.floor(timeRemaining / 60);
-        let seconds = timeRemaining % 60;
-        timerDisplay.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
+        // Auto-end if time is up
         if (timeRemaining <= 0) {
-            endGame();
+            endGame(false, true); // false = not completed all, true = timeout
         }
     }
 
@@ -807,6 +860,10 @@
     }
 
     function loadQuestion() {
+        // Reset UI State for new question
+        feedbackArea.style.display = 'none';
+        isAnswering = true;
+        
         if (currentQuestionIndex >= questions.length) {
             endGame(true); // Completed all questions
             return;
@@ -821,61 +878,75 @@
             const btn = document.createElement('button');
             btn.className = 'option-btn';
             btn.innerHTML = opt;
-            btn.onclick = () => checkAnswer(index);
+            btn.onclick = () => checkAnswer(index, btn);
             optionsContainer.appendChild(btn);
         });
 
         updateStats();
     }
 
-    function checkAnswer(selectedIndex) {
+    function checkAnswer(selectedIndex, btnElement) {
+        if (!isAnswering) return; // Prevent multiple clicks
+        isAnswering = false;
+
         const q = questions[currentQuestionIndex];
+        const allButtons = document.querySelectorAll('.option-btn');
         
+        // Disable all buttons to prevent changing answer
+        allButtons.forEach(b => b.disabled = true);
+
         if (selectedIndex === q.answer) {
-            // Correct
+            // CORRECT
+            btnElement.classList.add('correct');
+            feedbackMessage.innerText = "Jawaban Benar! 🎉";
+            feedbackMessage.style.color = "var(--secondary)";
             correctAnswers++;
-            currentQuestionIndex++;
-            loadQuestion();
+            
+            // Setup Next Button
+            nextBtn.innerText = "Soal Berikutnya";
+            nextBtn.onclick = nextQuestion;
         } else {
-            // Wrong
+            // WRONG
+            btnElement.classList.add('wrong');
             lives--;
             updateStats();
             
-            // Visual feedback (shake or red flash) could go here
-            const btns = document.querySelectorAll('.option-btn');
-            btns[selectedIndex].style.background = '#ffdddd';
-            btns[selectedIndex].style.borderColor = 'red';
-
             if (lives <= 0) {
-                setTimeout(endGame, 500);
+                feedbackMessage.innerText = "Salah! Nyawa Habis 💔";
+                feedbackMessage.style.color = "var(--accent)";
+                // Change Next Button behavior to finish
+                nextBtn.innerText = "Lihat Hasil";
+                nextBtn.onclick = () => endGame(false);
             } else {
-                // User requirement implies logic continues, 
-                // but usually placement tests stop or penalize.
-                // Assuming we move to next question but with less life?
-                // Or retry? Standard placement test: Move on.
-                currentQuestionIndex++;
-                setTimeout(loadQuestion, 500);
+                feedbackMessage.innerText = "Jawaban Salah 😔";
+                feedbackMessage.style.color = "var(--accent)";
+                nextBtn.innerText = "Soal Berikutnya";
+                nextBtn.onclick = nextQuestion;
             }
         }
+
+        // Show toggle area
+        feedbackArea.style.display = 'flex';
     }
 
-    function endGame(completed = false) {
+    function nextQuestion() {
+        currentQuestionIndex++;
+        loadQuestion();
+    }
+
+    function endGame(completed = false, timeout = false) {
         clearInterval(timerInterval);
         gameScreen.classList.remove('active');
         resultScreen.classList.add('active');
         statusBar.style.visibility = 'hidden';
 
-        // Logic placement:
-        // Jika nyawa habis di soal X, levelnya adalah level soal X.
-        // Jika completed (selesai semua), levelnya Mastery 4 (Lulus).
-        
+        // Logic placement
         let finalLevel = "";
         
         if (completed) {
             finalLevel = "MASTERY 4 (GRADUATED)";
         } else {
-            // Get level of the current question where they died
-            // If they died at index 60 (out of bounds), use last one
+            // Get level of the current question where they stopped/died
             let idx = Math.min(currentQuestionIndex, questions.length - 1);
             finalLevel = questions[idx].level;
         }
@@ -885,12 +956,13 @@
         
         // Calc time used
         let timeUsedSeconds = 3600 - timeRemaining;
+        if (timeout) timeUsedSeconds = 3600;
+        
         let m = Math.floor(timeUsedSeconds / 60);
         let s = timeUsedSeconds % 60;
         document.getElementById('timeUsed').innerText = `${m}m ${s}s`;
     }
 
 </script>
-
 </body>
 </html>
